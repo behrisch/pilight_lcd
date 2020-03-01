@@ -2,6 +2,7 @@
 
 import RPi.GPIO as GPIO
 import time
+import threading
 
 class HD44780:
 
@@ -15,12 +16,19 @@ class HD44780:
         self._width = width
         self._height = height
         self._memoffset = (0x80, 0xC0, 0x80 + width, 0xC0 + width)
+        self._vscroll_delay = 1
+        self._lines = []
+        self._current_offset = 0
+        self._paused = False
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(warn)
         for pin in (self._pin_e, self._pin_rs) + self._pins_db:
             GPIO.setup(pin, GPIO.OUT)
         self.clear()
+        t = threading.Thread(target=self.update)
+        t.daemon = True
+        t.start()
 
     def clear(self):
         self.cmd(0x33)
@@ -44,11 +52,31 @@ class HD44780:
             GPIO.output(self._pin_e, GPIO.LOW)
             time.sleep(self._delay)
 
+    def update(self):
+        while True:
+            if not self._paused:
+                for idx, l in enumerate(self._lines[self._current_offset:self._current_offset + self._height]):
+                    self.cmd(self._memoffset[idx])
+                    for char in (l + self._width * " ")[:self._width]:
+                        self.cmd(ord(char), True)
+            if len(self._lines) > self._height:
+                self._current_offset += 1
+                if self._current_offset + self._height > len(self._lines):
+                    self._current_offset = 0
+                    time.sleep(self._vscroll_delay)
+            else:
+                self._paused = True
+            time.sleep(self._vscroll_delay)
+
     def message(self, text, start=0):
-        for idx, l in enumerate(str(text).splitlines()):
-            self.cmd(self._memoffset[start + idx])
-            for char in (l + self._width * " ")[:self._width]:
-                self.cmd(ord(char), True)
+        self._paused = True
+        self._lines += [""] * (start - len(self._lines))
+        new_lines = text.splitlines()
+        self._lines[start:start + len(new_lines)] = new_lines
+        while self._lines[-1] == "":
+            del self._lines[-1]
+        self._paused = False
+
 
 if __name__ == '__main__':
     lcd = HD44780()
