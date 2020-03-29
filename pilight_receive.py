@@ -11,12 +11,13 @@ class PilightConnector:
     def __init__(self, values):
         self._lcd = HD44780()
         self._line_mapping = {1:0, 2:1, 3:2, 5:3, 4:4, 6:5}
+        self._outdated = datetime.timedelta(hours=1)
         self._values = values
         for v in values.values():
             self.update(v)
 
     def update(self, v):
-        msg = "%(name)s %(temperature)02.1fC %(humidity).0f%%" % v
+        msg = "%(name)s %(temperature)02.1f%(unit)s %(humidity).0f%%" % v
         print(msg)
         if v["id"] in self._line_mapping:
             self._lcd.message(msg, self._line_mapping[v["id"]])
@@ -32,6 +33,18 @@ class PilightConnector:
                 print("first update for", v["name"])
             v["last_update"] = now
             self.update(v)
+        self.check_outdated()
+
+    def check_outdated(self):
+        now = datetime.datetime.now()
+        for v in self._values.values():
+            delta = datetime.timedelta(days=100)
+            if "last_update" in v:
+                delta = now - v["last_update"]
+            unit = v["unit"].lower() if delta > self._outdated else v["unit"].upper()
+            if unit != v["unit"]:
+                v["unit"] = unit
+                self.update(v)
 
 
 if __name__ == '__main__':
@@ -41,9 +54,11 @@ if __name__ == '__main__':
         if "id" in value and "id" in value["id"][0]:
             value["id"] = value["id"][0]["id"]
             if key in config["gui"]:
-                value["name"] = (config["gui"][key]["name"] + "     ")[:10]
+                name = config["gui"][key]["name"].replace(" und ", "&")
             else:
-                value["name"] = key
+                name = key
+            value["name"] = (name + 10 * " ")[:10]
+            value["unit"] = "c"
             values[value["id"]] = value
     connector = PilightConnector(values)
     print(values)
@@ -56,5 +71,5 @@ if __name__ == '__main__':
     pilight_client.start()  # Start the receiver
 
     # You have 10 seconds to print all the data the pilight-daemon receives
-    time.sleep(15000)
+    time.sleep(150000)
     pilight_client.stop()  # Stop the receiver

@@ -20,6 +20,7 @@ class HD44780:
         self._lines = []
         self._current_offset = 0
         self._paused = False
+        self._replace = [(u"\xe4", u"\xe1"), (u"\xf6", u"\xef"), (u"\xfc", u"\xf5")]
 
         GPIO.setmode(GPIO.BCM)
         GPIO.setwarnings(warn)
@@ -71,6 +72,8 @@ class HD44780:
     def message(self, text, start=0):
         self._paused = True
         self._lines += [""] * (start - len(self._lines))
+        for old, new in self._replace:
+            text = text.replace(old, new)
         new_lines = text.splitlines()
         self._lines[start:start + len(new_lines)] = new_lines
         while self._lines[-1] == "":
