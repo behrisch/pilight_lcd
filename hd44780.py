@@ -1,4 +1,14 @@
 #!/usr/bin/python
+# inspired by https://github.com/lrvick/raspi-hd44780
+# see also https://www.sparkfun.com/datasheets/LCD/HD44780.pdf,
+# especially for the set of availlable characters (page 17)
+# some more sources for wiring which may laso help to make the backlight switchable somewhen:
+# https://www.raspberrypi-spy.co.uk/2012/08/16x2-lcd-module-control-with-backlight-switch
+# http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html#hd44780-howto
+# https://srm.gr/hd44780-lcd-screen-raspberry-pi-2-and-3-libreelec
+# https://tutorials-raspberrypi.de/raspberry-pi-lcd-display-16x2-hd44780/
+# https://www.electronicshub.org/interfacing-16x2-lcd-with-raspberry-pi/
+# ftp://ftp.osuosl.org/.2/nslu2/sources/cvs/lcdproc/lcdproc/docs/hd44780_howto.txt
 
 import RPi.GPIO as GPIO
 import time
