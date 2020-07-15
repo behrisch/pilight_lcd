@@ -12,27 +12,34 @@ class PilightConnector:
         self._lcd = HD44780()
         self._line_mapping = {1:0, 2:1, 3:2, 5:3, 4:4, 6:5}
         self._outdated = datetime.timedelta(hours=1)
+        self._debug = False
         self._values = values
         for v in values.values():
             self.update(v)
 
     def update(self, v):
         msg = "%(name)s %(temperature)02.1f%(unit)s %(humidity).0f%%" % v
-        print(msg)
+        if self._debug
+            print(msg)
         if v["id"] in self._line_mapping:
             self._lcd.message(msg, self._line_mapping[v["id"]])
 
     def handle_code(self, code):
+        if self._debug
+            print("received", code)
         if "message" in code and code["message"].get("id") in self._values:
-            v = self._values[code["message"]["id"]]
-            v.update(code["message"])
-            now = datetime.datetime.now()
-            if "last_update" in v:
-                print("update for", v["name"], "after", now - v["last_update"])
-            else:
-                print("first update for", v["name"])
-            v["last_update"] = now
-            self.update(v)
+            msg = code["message"]
+            if "temperature" in msg:
+                v = self._values[msg["id"]]
+                v.update(msg)
+                now = datetime.datetime.now()
+                if self._debug
+                    if "last_update" in v:
+                        print(now, "update for", v["name"], "after", now - v["last_update"])
+                    else:
+                        print(now, "first update for", v["name"])
+                v["last_update"] = now
+                self.update(v)
         self.check_outdated()
 
     def check_outdated(self):
@@ -71,5 +78,5 @@ if __name__ == '__main__':
     pilight_client.start()  # Start the receiver
 
     # You have 10 seconds to print all the data the pilight-daemon receives
-    time.sleep(150000)
+    time.sleep(1500000)
     pilight_client.stop()  # Stop the receiver
