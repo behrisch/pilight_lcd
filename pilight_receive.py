@@ -12,20 +12,20 @@ class PilightConnector:
         self._lcd = HD44780()
         self._line_mapping = {1:0, 2:1, 3:2, 5:3, 4:4, 6:5}
         self._outdated = datetime.timedelta(hours=1)
-        self._debug = False
+        self._debug = True
         self._values = values
         for v in values.values():
             self.update(v)
 
     def update(self, v):
         msg = "%(name)s %(temperature)02.1f%(unit)s %(humidity).0f%%" % v
-        if self._debug
+        if self._debug:
             print(msg)
         if v["id"] in self._line_mapping:
             self._lcd.message(msg, self._line_mapping[v["id"]])
 
     def handle_code(self, code):
-        if self._debug
+        if self._debug:
             print("received", code)
         if "message" in code and code["message"].get("id") in self._values:
             msg = code["message"]
@@ -33,7 +33,7 @@ class PilightConnector:
                 v = self._values[msg["id"]]
                 v.update(msg)
                 now = datetime.datetime.now()
-                if self._debug
+                if self._debug:
                     if "last_update" in v:
                         print(now, "update for", v["name"], "after", now - v["last_update"])
                     else:
