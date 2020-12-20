@@ -2,7 +2,7 @@
 # inspired by https://github.com/lrvick/raspi-hd44780
 # see also https://www.sparkfun.com/datasheets/LCD/HD44780.pdf,
 # especially for the set of availlable characters (page 17)
-# some more sources for wiring which may laso help to make the backlight switchable somewhen:
+# some more sources for wiring which may help to make the backlight switchable somewhen:
 # https://www.raspberrypi-spy.co.uk/2012/08/16x2-lcd-module-control-with-backlight-switch
 # http://lcdproc.sourceforge.net/docs/lcdproc-0-5-5-user.html#hd44780-howto
 # https://srm.gr/hd44780-lcd-screen-raspberry-pi-2-and-3-libreelec

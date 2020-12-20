@@ -1,0 +1,15 @@
+{
+	"line_mapping": {"1":0, "2":1, "3":2, "5":3, "4":4, "6":5},
+	"outdated": {"hours": 1},
+	"debug": true,
+	"hd44780": {
+		"pin_rs": 16,
+		"pin_e": 5,
+		"pins_db": [6, 13, 19, 26],
+		"pulse": 0.0005,
+		"delay": 0.0005,
+		"width": 20,
+		"height": 4,
+		"warn": false
+	}
+}

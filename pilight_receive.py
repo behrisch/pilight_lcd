@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from __future__ import print_function
+import os
 import time
 import datetime
 import json
@@ -8,11 +9,15 @@ from hd44780 import HD44780
 
 
 class PilightConnector:
-    def __init__(self, values):
-        self._lcd = HD44780()
-        self._line_mapping = {1:0, 2:1, 3:2, 5:3, 4:4, 6:5}
-        self._outdated = datetime.timedelta(hours=1)
-        self._debug = False
+    def __init__(self, values, lcd_config):
+        cfg = json.load(open(lcd_config)) if lcd_config else {}
+        self._lcd = HD44780(**cfg.get("hd44780", {}))
+        self._line_mapping = {}
+        mapping = cfg.get("line_mapping", {1:0, 2:1, 3:2, 5:3, 4:4, 6:5})
+        for key, value in mapping.items():
+            self._line_mapping[int(key)] = int(value)
+        self._outdated = datetime.timedelta(**cfg.get("outdated", {"hours": 1}))
+        self._debug = cfg.get("debug", False)
         self._values = values
         for v in values.values():
             self.update(v)
@@ -67,16 +72,19 @@ if __name__ == '__main__':
             value["name"] = (name + 10 * " ")[:10]
             value["unit"] = "c"
             values[value["id"]] = value
-    connector = PilightConnector(values)
+    lcd_config = None
+    for path in ("/etc/pilight", os.path.dirname("__file__")):
+        if os.path.exists(os.path.join(path, "lcd-config.json")):
+            lcd_config = os.path.join(path, "lcd-config.json")
+    connector = PilightConnector(values, lcd_config)
     print(values)
 
     # Create new pilight connection that runs on localhost with port 5000
-    pilight_client = pilight.Client(host='127.0.0.1', port=5000)
+    pilight_client = pilight.Client(host='127.0.0.1', port=config.get("settings", {}).get("port", 5000))
 
     # Set a data handle that is called on received data
     pilight_client.set_callback(connector.handle_code)
     pilight_client.start()  # Start the receiver
 
-    # You have 10 seconds to print all the data the pilight-daemon receives
     time.sleep(1500000)
     pilight_client.stop()  # Stop the receiver
