@@ -1,0 +1,10 @@
+[Unit]
+Description=pilight_lcd
+After=network-online.target
+
+[Service]
+ExecStart=/home/osmc/pilight_lcd/pilight_receive.py
+
+[Install]
+WantedBy=multi-user.target
+

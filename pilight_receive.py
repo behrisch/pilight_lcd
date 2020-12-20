@@ -12,7 +12,7 @@ class PilightConnector:
         self._lcd = HD44780()
         self._line_mapping = {1:0, 2:1, 3:2, 5:3, 4:4, 6:5}
         self._outdated = datetime.timedelta(hours=1)
-        self._debug = True
+        self._debug = False
         self._values = values
         for v in values.values():
             self.update(v)
