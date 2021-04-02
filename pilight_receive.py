@@ -76,15 +76,18 @@ if __name__ == '__main__':
     for path in ("/etc/pilight", os.path.dirname("__file__")):
         if os.path.exists(os.path.join(path, "lcd-config.json")):
             lcd_config = os.path.join(path, "lcd-config.json")
-    connector = PilightConnector(values, lcd_config)
-    print(values)
 
-    # Create new pilight connection that runs on localhost with port 5000
-    pilight_client = pilight.Client(host='127.0.0.1', port=config.get("settings", {}).get("port", 5000))
+    while True:
+        connector = PilightConnector(values, lcd_config)
+        print(values)
 
-    # Set a data handle that is called on received data
-    pilight_client.set_callback(connector.handle_code)
-    pilight_client.start()  # Start the receiver
+        # Create new pilight connection that runs on localhost with port 5000
+        pilight_client = pilight.Client(host='127.0.0.1', port=config.get("settings", {}).get("port", 5000))
 
-    time.sleep(1500000)
-    pilight_client.stop()  # Stop the receiver
+        # Set a data handle that is called on received data
+        pilight_client.set_callback(connector.handle_code)
+        pilight_client.start()  # Start the receiver
+
+        # restart every hour becuase sometimes the lcd connection breaks
+        time.sleep(3600)
+        pilight_client.stop()  # Stop the receiver
